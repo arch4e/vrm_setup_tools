@@ -33,44 +33,47 @@ namespace Util4
             {
                 SkinnedMeshRenderer[] renderers = avatarPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-                foreach (var renderer in renderers)
-                {
-                    var    mesh     = renderer.sharedMesh;
-                    string meshName = renderer.name;
-
-                    // get mesh relative path
-                    GameObject meshParent   = GameObject.Find(meshName);
-                    string meshRelativePath = GetMeshRelativePath(meshParent);
-                    meshRelativePath        = meshRelativePath.Substring(avatarPrefab.name.Length + 1); // exclude prefab name + "/"
-
-                    for (int i = 0; i < mesh.blendShapeCount; ++i)
-                    {
-                        string savePath = AssetDatabase.GetAssetPath(blendShapeFolder);          // Assets/<path>/<to>/<blend shape dir>
-                        string dataPath = savePath + "/" + mesh.GetBlendShapeName(i) + ".asset"; // dir name + key name + .asset
-
-                        // skip processing when save directory is empty or asset file exists
-                        if (string.IsNullOrEmpty(savePath) || File.Exists(dataPath)) continue;
-
-                        // create new blend shape clip
-                        var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
-                        blendShapeObject.Clips.Add(clip);
-                        EditorUtility.SetDirty(blendShapeObject);
-
-                        // create blend shape binding
-                        BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
-                        blendShapeBinding.RelativePath      = meshRelativePath;
-                        blendShapeBinding.Index             = i;
-                        blendShapeBinding.Weight            = 100;
-
-                        // add blend shape binding to blend shape clip
-                        BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
-                        clip.Values = blendShapeBindings;
-                    }
-                }
+                foreach (var renderer in renderers) CreateBlendShapeClipsFromSMR(renderer);
             }
 
             if (GUILayout.Button("Remove Null Clips")) blendShapeObject.Clips.RemoveAll(item => item == null);
         }
+
+        private void CreateBlendShapeClipsFromSMR(SkinnedMeshRenderer renderer)
+        {
+            var    mesh     = renderer.sharedMesh;
+            string meshName = renderer.name;
+
+            // get mesh relative path
+            GameObject meshParent   = GameObject.Find(meshName);
+            string meshRelativePath = GetMeshRelativePath(meshParent);
+            meshRelativePath        = meshRelativePath.Substring(avatarPrefab.name.Length + 1); // exclude prefab name + "/"
+
+            for (int i = 0; i < mesh.blendShapeCount; ++i)
+            {
+                string savePath = AssetDatabase.GetAssetPath(blendShapeFolder);          // Assets/<path>/<to>/<blend shape dir>
+                string dataPath = savePath + "/" + mesh.GetBlendShapeName(i) + ".asset"; // dir name + key name + .asset
+
+                // skip processing when save directory is empty or asset file exists
+                if (string.IsNullOrEmpty(savePath) || File.Exists(dataPath)) continue;
+
+                // create new blend shape clip
+                var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
+                blendShapeObject.Clips.Add(clip);
+                EditorUtility.SetDirty(blendShapeObject);
+
+                // create blend shape binding
+                BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
+                blendShapeBinding.RelativePath      = meshRelativePath;
+                blendShapeBinding.Index             = i;
+                blendShapeBinding.Weight            = 100;
+
+                // add blend shape binding to blend shape clip
+                BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
+                clip.Values = blendShapeBindings;
+            }
+        }
+
 
         private string GetMeshRelativePath(GameObject o)
         {
