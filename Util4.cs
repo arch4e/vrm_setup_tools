@@ -38,6 +38,11 @@ namespace Util4
                     var    mesh     = renderer.sharedMesh;
                     string meshName = renderer.name;
 
+                    // get mesh relative path
+                    GameObject meshParent   = GameObject.Find(meshName);
+                    string meshRelativePath = GetMeshRelativePath(meshParent);
+                    meshRelativePath        = meshRelativePath.Substring(avatarPrefab.name.Length + 1); // exclude prefab name + "/"
+
                     for (int i = 0; i < mesh.blendShapeCount; ++i)
                     {
                         string savePath = AssetDatabase.GetAssetPath(blendShapeFolder);          // Assets/<path>/<to>/<blend shape dir>
@@ -53,7 +58,7 @@ namespace Util4
 
                         // create blend shape binding
                         BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
-                        blendShapeBinding.RelativePath      = meshName;
+                        blendShapeBinding.RelativePath      = meshRelativePath;
                         blendShapeBinding.Index             = i;
                         blendShapeBinding.Weight            = 100;
 
@@ -63,6 +68,25 @@ namespace Util4
                     }
                 }
             }
+        }
+
+        private string GetMeshRelativePath(GameObject o)
+        {
+            return GetMeshRelativePath(o.transform);
+        }
+
+        private string GetMeshRelativePath(Transform t)
+        {
+            string path   = t.name;
+            var    parent = t.parent;
+
+            while (parent)
+            {
+                path   = $"{parent.name}/{path}";
+                parent = parent.parent;
+            }
+
+            return path;
         }
     }
 }
