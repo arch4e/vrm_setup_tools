@@ -68,6 +68,8 @@ namespace Util4
                     }
                 }
             }
+
+            if (GUILayout.Button("Remove Null Clips")) blendShapeObject.Clips.RemoveAll(item => item == null);
         }
 
         private string GetMeshRelativePath(GameObject o)
