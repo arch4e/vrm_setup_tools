@@ -14,6 +14,8 @@ namespace Util4
         private GameObject         avatarPrefab     = null;
         private BlendShapeAvatar   blendShapeObject = null;
         private UnityEngine.Object blendShapeFolder = null;
+        private SkinnedMeshRenderer skinnedMeshRenderer = null;
+        private int selectedSourceIndex = 0;
 
         [MenuItem("Tools/Util-4")]
         static void Init()
@@ -24,16 +26,33 @@ namespace Util4
 
         void OnGUI()
         {
-            avatarPrefab     = (GameObject)EditorGUILayout.ObjectField("Avater Prefab", avatarPrefab, typeof(GameObject), true);
+            /* --- source selector --- */
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Blend Shape Source:");
+            string[] sourceOptions = {"Prefab", "Mesh"};
+            GUIStyle styleRadio = new GUIStyle(EditorStyles.radioButton);
+            selectedSourceIndex = GUILayout.SelectionGrid(selectedSourceIndex, sourceOptions, 1, styleRadio);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10); // 5px
+
+            /* --- Object Field --- */
+            avatarPrefab = (GameObject)EditorGUILayout.ObjectField("Avater Prefab", avatarPrefab, typeof(GameObject), true);
+            if (sourceOptions[selectedSourceIndex] == "Mesh")
+            {
+                skinnedMeshRenderer = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Source Mesh", skinnedMeshRenderer,
+                                                                                       typeof(SkinnedMeshRenderer), true);
+            }
             blendShapeObject = (BlendShapeAvatar)EditorGUILayout.ObjectField("Blend Shape Object", blendShapeObject, typeof(UnityEngine.Object), true);
             blendShapeFolder = EditorGUILayout.ObjectField("Save Folder", blendShapeFolder, typeof(UnityEngine.Object), true);
             GUILayout.Space(5); // 5px
 
+            /* --- Create Blend Shape Clips --- */
             if (GUILayout.Button("Create Blend Shape Clips"))
             {
-                SkinnedMeshRenderer[] renderers = avatarPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
-
-                foreach (var renderer in renderers) CreateBlendShapeClipsFromSMR(renderer);
+                if (sourceOptions[selectedSourceIndex] == "Prefab") {
+                    SkinnedMeshRenderer[] renderers = avatarPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
+                    foreach (var renderer in renderers) CreateBlendShapeClipsFromSMR(renderer);
+                } else if (sourceOptions[selectedSourceIndex] == "Mesh") CreateBlendShapeClipsFromSMR(skinnedMeshRenderer);
             }
 
             if (GUILayout.Button("Remove Null Clips")) blendShapeObject.Clips.RemoveAll(item => item == null);
@@ -95,3 +114,4 @@ namespace Util4
         }
     }
 }
+
