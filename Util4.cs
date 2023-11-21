@@ -1,7 +1,7 @@
-using UnityEngine;
-
-using VRM;
+using System.IO;
 using UniGLTF;
+using UnityEngine;
+using VRM;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -11,59 +11,55 @@ namespace Util4
 {
     public class Util4 : EditorWindow
     {
-        private GameObject avatarPrefab = null;
-        private BlendShapeAvatar blendShapeObject = null;
+        private GameObject         avatarPrefab     = null;
+        private BlendShapeAvatar   blendShapeObject = null;
         private UnityEngine.Object blendShapeFolder = null;
-        private Vector2 shapeKeysScrollPosition = Vector2.zero;
 
         [MenuItem("Tools/Util-4")]
         static void Init()
         {
-            var window = GetWindowWithRect<Util4>(new Rect(0, 0, 165, 100));
+            var window = GetWindowWithRect<Util4>(new Rect(0, 0, 400, 560));
             window.Show();
         }
 
         void OnGUI()
         {
-            avatarPrefab     = (GameObject)EditorGUILayout.ObjectField("Avatar Prefab", avatarPrefab, typeof(GameObject), true);
+            avatarPrefab     = (GameObject)EditorGUILayout.ObjectField("Avater Prefab", avatarPrefab, typeof(GameObject), true);
             blendShapeObject = (BlendShapeAvatar)EditorGUILayout.ObjectField("Blend Shape Object", blendShapeObject, typeof(UnityEngine.Object), true);
-            blendShapeFolder = EditorGUILayout.ObjectField("Blend Shape Folder", blendShapeFolder, typeof(UnityEngine.Object), true);
-
-            using (GUILayout.ScrollViewScope scroll = new GUILayout.ScrollViewScope(shapeKeysScrollPosition, EditorStyles.helpBox))
-            {
-                shapeKeysScrollPosition = scroll.scrollPosition;
-            }
+            blendShapeFolder = EditorGUILayout.ObjectField("Save Folder", blendShapeFolder, typeof(UnityEngine.Object), true);
+            GUILayout.Space(5); // 5px
 
             if (GUILayout.Button("Create Blend Shape Clips"))
             {
                 SkinnedMeshRenderer[] renderers = avatarPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
+
                 foreach (var renderer in renderers)
                 {
-                    var mesh = renderer.sharedMesh;
+                    var    mesh     = renderer.sharedMesh;
                     string meshName = renderer.name;
 
                     for (int i = 0; i < mesh.blendShapeCount; ++i)
                     {
-                        string dir = AssetDatabase.GetAssetPath(blendShapeFolder);  // Assets/SavedObject
-                        string path = dir + "/" + mesh.GetBlendShapeName(i) + ".asset";  // ディレクトリ + /<シェイプキーの名前>.asset;
+                        string savePath = AssetDatabase.GetAssetPath(blendShapeFolder);          // Assets/<path>/<to>/<blend shape dir>
+                        string dataPath = savePath + "/" + mesh.GetBlendShapeName(i) + ".asset"; // dir name + key name + .asset
 
-                        if (!string.IsNullOrEmpty(path))
-                        {
-                            // 保存と追加
-                            var clip = BlendShapeAvatar.CreateBlendShapeClip(path.ToUnityRelativePath());
-                            blendShapeObject.Clips.Add(clip);
-                            EditorUtility.SetDirty(blendShapeObject);
+                        // skip processing when save directory is empty or asset file exists
+                        if (string.IsNullOrEmpty(savePath) || File.Exists(dataPath)) continue;
 
+                        // create new blend shape clip
+                        var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
+                        blendShapeObject.Clips.Add(clip);
+                        EditorUtility.SetDirty(blendShapeObject);
 
-                            // シェイプキーの設定
-                            BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
-                            blendShapeBinding.RelativePath = meshName;
-                            blendShapeBinding.Index = i;
-                            blendShapeBinding.Weight = 100;
+                        // create blend shape binding
+                        BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
+                        blendShapeBinding.RelativePath      = meshName;
+                        blendShapeBinding.Index             = i;
+                        blendShapeBinding.Weight            = 100;
 
-                            BlendShapeBinding[] bindings = { blendShapeBinding };
-                            clip.Values = bindings;
-                        }
+                        // add blend shape binding to blend shape clip
+                        BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
+                        clip.Values = blendShapeBindings;
                     }
                 }
             }
