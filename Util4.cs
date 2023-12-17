@@ -64,7 +64,7 @@ namespace Util4
             string meshName = renderer.name;
 
             // get mesh relative path
-            GameObject meshParent   = GameObject.Find(meshName);
+            GameObject meshParent   = FindMeshParentObject(avatarPrefab.transform, meshName); // attention: possible duplication of names in child game objects in hierarchy
             string meshRelativePath = GetMeshRelativePath(meshParent);
             meshRelativePath        = meshRelativePath.Substring(avatarPrefab.name.Length + 1); // exclude prefab name + "/"
 
@@ -94,6 +94,19 @@ namespace Util4
         }
 
 
+        private GameObject FindMeshParentObject(Transform transform, string meshName)
+        {
+            GameObject meshParentObject = null;
+            for (int i = 0; i < transform.childCount && meshParentObject is null; i++)
+            {
+                Transform childTransform = transform.GetChild(i);
+                if (childTransform.name == meshName) return childTransform.gameObject;
+                else meshParentObject = FindMeshParentObject(childTransform, meshName);
+            }
+
+            return meshParentObject;
+        }
+
         private string GetMeshRelativePath(GameObject o)
         {
             return GetMeshRelativePath(o.transform);
@@ -114,4 +127,3 @@ namespace Util4
         }
     }
 }
-
