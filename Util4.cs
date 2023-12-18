@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UniGLTF;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace Util4
         private UnityEngine.Object blendShapeFolder = null;
         private SkinnedMeshRenderer skinnedMeshRenderer = null;
         private int selectedSourceIndex = 0;
+        private int selectedExistClipOptionIndex = 0;
 
         [MenuItem("Tools/Util-4")]
         static void Init()
@@ -26,14 +28,23 @@ namespace Util4
 
         void OnGUI()
         {
+            GUIStyle styleRadio = new GUIStyle(EditorStyles.radioButton);
+
             /* --- source selector --- */
             GUILayout.BeginHorizontal();
             GUILayout.Label("Blend Shape Source:");
             string[] sourceOptions = {"Prefab", "Mesh"};
-            GUIStyle styleRadio = new GUIStyle(EditorStyles.radioButton);
             selectedSourceIndex = GUILayout.SelectionGrid(selectedSourceIndex, sourceOptions, 1, styleRadio);
             GUILayout.EndHorizontal();
             GUILayout.Space(10); // 5px
+
+            /* --- exist clip option --- */
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Exist Blend Shape Clip:");
+            string[] existBlendShapeClipOptions = {"Skip", "Set Weight to 1 (from 0 or empty)"};
+            selectedExistClipOptionIndex = GUILayout.SelectionGrid(selectedExistClipOptionIndex, existBlendShapeClipOptions, 1, styleRadio);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10); // 10px
 
             /* --- Object Field --- */
             avatarPrefab = (GameObject)EditorGUILayout.ObjectField("Avater Prefab", avatarPrefab, typeof(GameObject), true);
@@ -74,22 +85,42 @@ namespace Util4
                 string dataPath = savePath + "/" + mesh.GetBlendShapeName(i) + ".asset"; // dir name + key name + .asset
 
                 // skip processing when save directory is empty or asset file exists
-                if (string.IsNullOrEmpty(savePath) || File.Exists(dataPath)) continue;
+                // "selectedExistClipOptionIndex == 0" means "Skip"
+                if (string.IsNullOrEmpty(savePath) || (selectedExistClipOptionIndex == 0 && File.Exists(dataPath))) continue;
 
-                // create new blend shape clip
-                var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
-                blendShapeObject.Clips.Add(clip);
-                EditorUtility.SetDirty(blendShapeObject);
+                int clipIndex = blendShapeObject.Clips.FindIndex(0, blendShapeObject.Clips.Count, x => x.name == mesh.GetBlendShapeName(i));
+                if (clipIndex == -1) {
+                    // create new blend shape clip
+                    var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
+                    blendShapeObject.Clips.Add(clip);
+                    EditorUtility.SetDirty(blendShapeObject);
 
-                // create blend shape binding
-                BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
-                blendShapeBinding.RelativePath      = meshRelativePath;
-                blendShapeBinding.Index             = i;
-                blendShapeBinding.Weight            = 100;
+                    // create blend shape binding
+                    BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
+                    blendShapeBinding.RelativePath      = meshRelativePath;
+                    blendShapeBinding.Index             = i;
+                    blendShapeBinding.Weight            = 100;
 
-                // add blend shape binding to blend shape clip
-                BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
-                clip.Values = blendShapeBindings;
+                    // add blend shape binding to blend shape clip
+                    BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
+                    clip.Values = blendShapeBindings;
+                } else {
+                    BlendShapeBinding[] blendShapeBindingValues = blendShapeObject.Clips[clipIndex].Values;
+                    int blendShapeBindingValueIndex = Array.FindIndex(blendShapeBindingValues, x => x.Index == i);
+                    if (blendShapeBindingValueIndex == -1) {
+                        // create blend shape binding
+                        BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
+                        blendShapeBinding.RelativePath      = meshRelativePath;
+                        blendShapeBinding.Index             = i;
+                        blendShapeBinding.Weight            = 100;
+
+                        // add blend shape binding to blend shape clip
+                        BlendShapeBinding[] blendShapeBindings  = { blendShapeBinding };
+                        blendShapeObject.Clips[clipIndex].Values = blendShapeBindings;
+                    } else if (blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight == 0) {
+                        blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight = 100;
+                    }
+                }
             }
         }
 
