@@ -47,7 +47,7 @@ namespace Util4
             GUILayout.Space(10); // 10px
 
             /* --- Object Field --- */
-            avatarPrefab = (GameObject)EditorGUILayout.ObjectField("Avater Prefab", avatarPrefab, typeof(GameObject), true);
+            avatarPrefab = (GameObject)EditorGUILayout.ObjectField("Avatar Prefab", avatarPrefab, typeof(GameObject), true);
             if (sourceOptions[selectedSourceIndex] == "Mesh")
             {
                 skinnedMeshRenderer = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Source Mesh", skinnedMeshRenderer,
