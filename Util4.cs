@@ -119,6 +119,21 @@ namespace Util4
                         blendShapeObject.Clips[clipIndex].Values = blendShapeBindings;
                     } else if (blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight == 0) {
                         blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight = 100;
+                    } else {
+                        int _blendShapeBindingValueIndex = Array.FindIndex(blendShapeBindingValues, x => x.RelativePath == meshRelativePath);
+
+                        // create blend shape binding
+                        BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
+                        blendShapeBinding.RelativePath      = meshRelativePath;
+                        blendShapeBinding.Index             = i;
+                        blendShapeBinding.Weight            = 100;
+
+                        // add blend shape binding to blend shape clip
+                        if (_blendShapeBindingValueIndex == -1) { // BlendShapeClip is exists, BlendShapeBinding is not exist
+                            BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
+                            Array.Resize(ref blendShapeObject.Clips[clipIndex].Values, blendShapeObject.Clips[clipIndex].Values.Length + 1);
+                            blendShapeObject.Clips[clipIndex].Values[blendShapeObject.Clips[clipIndex].Values.Length - 1] = blendShapeBinding;
+                        }
                     }
                 }
             }
