@@ -40,8 +40,8 @@ namespace Util4
 
             /* --- exist clip option --- */
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Exist Blend Shape Clip:");
-            string[] existBlendShapeClipOptions = {"Skip", "Set Weight to 1 (from 0 or empty)"};
+            GUILayout.Label("Exist Blend Shape Clips:");
+            string[] existBlendShapeClipOptions = {"Set Weight to 1 (from 0 or empty)", "Skip"};
             selectedExistClipOptionIndex = GUILayout.SelectionGrid(selectedExistClipOptionIndex, existBlendShapeClipOptions, 1, styleRadio);
             GUILayout.EndHorizontal();
             GUILayout.Space(10); // 10px
@@ -86,8 +86,8 @@ namespace Util4
                 string dataPath = savePath + "/" + mesh.GetBlendShapeName(i) + ".asset"; // dir name + key name + .asset
 
                 // skip processing when save directory is empty or asset file exists
-                // "selectedExistClipOptionIndex == 0" means "Skip"
-                if (string.IsNullOrEmpty(savePath) || (selectedExistClipOptionIndex == 0 && File.Exists(dataPath))) continue;
+                // "selectedExistClipOptionIndex == 1" means "Skip"
+                if (string.IsNullOrEmpty(savePath) || (selectedExistClipOptionIndex == 1 && File.Exists(dataPath))) continue;
 
                 // define blend shape binding
                 BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
