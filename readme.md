@@ -2,25 +2,24 @@
 
 ## Installation
 
-### Manually Install
+### Use .unitypackage
 
-1. Download `.cs` file(s)
-1. Open your Unity project
-1. Create folder `Assets/Editor`
-1. Move `.cs` file(s) to `Assets/Editor`
+1. Download the unitypackage file from [releases](https://github.com/arch4e/util4_for_unity/releases)
+1. Import unitypackage file to your project
 1. Open tool window `(Menu) >> Tools >> Util4`
 
-### Use Git
+### Manually Install
 
-```
-cd <path>/<to>/<project>/Assets
-git clone git@github.com:arch4e/util4_for_unity.git Editor
-```
+1. Download this project as a zip
+1. Extract zip file
+1. Create folder `Assets/Editor`
+1. Move folder to `Assets` in your project
+1. Open tool window `(Menu) >> Tools >> Util4`
 
 ## Development Environment
 
-* Unity 2021.3.32f1
-* [UniVRM v0.115.0](https://github.com/vrm-c/UniVRM/releases)
+* Unity 2021.3.40f1
+* [UniVRM-0.123.0_3104](https://github.com/vrm-c/UniVRM/releases)
 
 ## License
 

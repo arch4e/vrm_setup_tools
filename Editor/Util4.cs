@@ -1,8 +1,8 @@
-// Util4 version 0.2.1
+// Util4 version 0.2.2
 // repository: https://github.com/arch4e/util4_for_unity
 // usage (ja): https://arch4e.com/posts/vrm-setup-utility-usage-ja/
-// contact   : X   ) https://twitter.com/arch4e_N
-//             BSKY) https://bsky.app/profile/arch4e.bsky.social
+// contact   : X      ) https://twitter.com/undefi4ed
+//             Misskey) https://misskey.io/@arch4e
 
 using System;
 using System.IO;
