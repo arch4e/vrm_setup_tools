@@ -103,8 +103,11 @@ namespace Util4
                     // create new blend shape clip
                     var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
                     blendShapeObject.Clips.Add(clip);
-                    EditorUtility.SetDirty(blendShapeObject);
                     clip.Values = blendShapeBindings;
+
+                    // notify Unity that the blendShapeObject has changed
+                    EditorUtility.SetDirty(blendShapeObject);
+                    EditorUtility.SetDirty(clip);
                 } else { // if the blend shape clip exists
                     BlendShapeBinding[] blendShapeBindingValues = blendShapeObject.Clips[clipIndex].Values;
                     int blendShapeBindingValueIndex = Array.FindIndex(blendShapeBindingValues, x => x.RelativePath == meshRelativePath);
@@ -121,6 +124,10 @@ namespace Util4
                         // when the blend shape clip and the blend shape binding exist, and the weight value is 0
                         blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight = 100;
                     }
+
+                    // notify Unity that the blendShapeObject has changed
+                    EditorUtility.SetDirty(blendShapeObject.Clips[clipIndex]);
+                    EditorUtility.SetDirty(blendShapeObject);
                 }
             }
         }
