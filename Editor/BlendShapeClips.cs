@@ -8,9 +8,9 @@ using VRM;
 using UnityEditor;
 #endif
 
-namespace Util4
+namespace VST_BlendShape_BlendShapeClips
 {
-    public class Util4 : EditorWindow
+    public class VST_BlendShape_BlendShapeClips : EditorWindow
     {
         private GameObject         avatarPrefab     = null;
         private BlendShapeAvatar   blendShapeObject = null;
@@ -19,10 +19,10 @@ namespace Util4
         private int selectedSourceIndex = 0;
         private int selectedExistClipOptionIndex = 0;
 
-        [MenuItem("Tools/Util-4")]
+        [MenuItem("Tools/VRMSetupTools/BlendShape/BlendShapeClips")]
         static void Init()
         {
-            var window = GetWindowWithRect<Util4>(new Rect(0, 0, 400, 560));
+            var window = GetWindowWithRect<VST_BlendShape_BlendShapeClips>(new Rect(0, 0, 400, 560));
             window.Show();
         }
 
@@ -53,7 +53,7 @@ namespace Util4
                 skinnedMeshRenderer = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Source Mesh", skinnedMeshRenderer,
                                                                                        typeof(SkinnedMeshRenderer), true);
             }
-            blendShapeObject = (BlendShapeAvatar)EditorGUILayout.ObjectField("Blend Shape Object", blendShapeObject, typeof(UnityEngine.Object), true);
+            blendShapeObject = (BlendShapeAvatar)EditorGUILayout.ObjectField("BlendShape File", blendShapeObject, typeof(UnityEngine.Object), true);
             blendShapeFolder = EditorGUILayout.ObjectField("Save Folder", blendShapeFolder, typeof(UnityEngine.Object), true);
             GUILayout.Space(5); // 5px
 
@@ -64,7 +64,7 @@ namespace Util4
                     SkinnedMeshRenderer[] renderers = avatarPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
                     foreach (var renderer in renderers) CreateBlendShapeClipsFromSMR(renderer);
                 } else if (sourceOptions[selectedSourceIndex] == "Mesh") CreateBlendShapeClipsFromSMR(skinnedMeshRenderer);
-                Debug.Log("Util4: The creation of blend shape clips has been completed.");
+                Debug.Log("[VRMSetupTools] The creation of blend shape clips has been completed.");
             }
 
             if (GUILayout.Button("Remove Null Clips")) blendShapeObject.Clips.RemoveAll(item => item == null);
