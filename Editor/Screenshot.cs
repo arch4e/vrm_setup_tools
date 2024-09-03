@@ -20,7 +20,7 @@ namespace VST_BlendShape_Screenshot {
 
         /* variables */
         private List<Camera> cameraObjects = new List<Camera>();
-        private GameObject VRMPrefab = null; // del
+        private GameObject vrmPrefab = null; // del
         private BlendShapeAvatar blendShapeAvatar = null;
         private UnityEditor.DefaultAsset outputFolder = null;
         private ReorderableList cameraList;
@@ -73,8 +73,8 @@ namespace VST_BlendShape_Screenshot {
         void OnGUI()
         {
             GUILayout.Space(10); // px
-            VRMPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", VRMPrefab, typeof(GameObject), true); // del
-            blendShapeAvatar = (BlendShapeAvatar)EditorGUILayout.ObjectField("BlendShape File", blendShapeAvatar, typeof(BlendShapeAvatar), true);
+            vrmPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true); // del
+            // blendShapeAvatar = (BlendShapeAvatar)EditorGUILayout.ObjectField("BlendShape File", blendShapeAvatar, typeof(BlendShapeAvatar), true);
             outputFolder = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Output Folder", outputFolder, typeof(UnityEditor.DefaultAsset), true);
             imageSize = (IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", imageSize);
             saveFileFormat = (SUPPORTED_FILE_FORMATS)EditorGUILayout.EnumPopup("File Format", saveFileFormat);
@@ -95,8 +95,8 @@ namespace VST_BlendShape_Screenshot {
 
         private void CaptureBlendShapeResults(int cameraIndex, int blendShapeClipIndex)
         {
-            BlendShapeAvatar   backupblendShapeAvatar = blendShapeAvatar;
-            VRMBlendShapeProxy blendShapeProxy        = VRMPrefab.GetComponent<VRMBlendShapeProxy>();
+            VRMBlendShapeProxy blendShapeProxy  = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
+            BlendShapeAvatar   blendShapeAvatar = blendShapeProxy.BlendShapeAvatar;
 
             // guard
             if (cameraIndex >= cameraObjects.Count)
@@ -110,15 +110,10 @@ namespace VST_BlendShape_Screenshot {
             string fileName = cameraObjects[cameraIndex].gameObject.name + "_" + blendShapeName + "." + saveFileFormat.ToString().ToLower();
 
             if (Enum.TryParse(blendShapeName, out BlendShapePreset _blendShapePreset))
-            {
-                Debug.Log("preset");
                 blendShapeProxy.ImmediatelySetValue(_blendShapePreset, 1.0f);
-            }
             else
-            {
-                Debug.Log("custom");
                 blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateUnknown(blendShapeName), 1.0f);
-            }
+
             SceneView.RepaintAll();
 
             WaitForBlendShapeUpdate(() =>
