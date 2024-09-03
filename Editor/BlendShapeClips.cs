@@ -14,21 +14,21 @@ using VRM;
 using UnityEditor;
 #endif
 
-namespace Util4
+namespace VST_BlendShape_BlendShapeClips
 {
-    public class Util4 : EditorWindow
+    public class VST_BlendShape_BlendShapeClips : EditorWindow
     {
-        private GameObject         avatarPrefab     = null;
-        private BlendShapeAvatar   blendShapeObject = null;
+        private GameObject         vrmPrefab        = null;
+        private BlendShapeAvatar   blendShapeAvatar = null;
         private UnityEngine.Object blendShapeFolder = null;
         private SkinnedMeshRenderer skinnedMeshRenderer = null;
         private int selectedSourceIndex = 0;
         private int selectedExistClipOptionIndex = 0;
 
-        [MenuItem("Tools/Util-4")]
+        [MenuItem("Tools/VRMSetupTools/BlendShape/BlendShapeClips")]
         static void Init()
         {
-            var window = GetWindowWithRect<Util4>(new Rect(0, 0, 400, 560));
+            var window = GetWindowWithRect<VST_BlendShape_BlendShapeClips>(new Rect(0, 0, 400, 560));
             window.Show();
         }
 
@@ -53,27 +53,33 @@ namespace Util4
             GUILayout.Space(10); // 10px
 
             /* --- Object Field --- */
-            avatarPrefab = (GameObject)EditorGUILayout.ObjectField("Avatar Prefab", avatarPrefab, typeof(GameObject), true);
+            vrmPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true);
             if (sourceOptions[selectedSourceIndex] == "Mesh")
             {
                 skinnedMeshRenderer = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Source Mesh", skinnedMeshRenderer,
                                                                                        typeof(SkinnedMeshRenderer), true);
             }
-            blendShapeObject = (BlendShapeAvatar)EditorGUILayout.ObjectField("Blend Shape Object", blendShapeObject, typeof(UnityEngine.Object), true);
             blendShapeFolder = EditorGUILayout.ObjectField("Save Folder", blendShapeFolder, typeof(UnityEngine.Object), true);
             GUILayout.Space(5); // 5px
 
             /* --- Create Blend Shape Clips --- */
             if (GUILayout.Button("Create Blend Shape Clips"))
             {
+                VRMBlendShapeProxy blendShapeProxy = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
+                blendShapeAvatar = blendShapeProxy.BlendShapeAvatar;
+
                 if (sourceOptions[selectedSourceIndex] == "Prefab") {
-                    SkinnedMeshRenderer[] renderers = avatarPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
+                    SkinnedMeshRenderer[] renderers = vrmPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
                     foreach (var renderer in renderers) CreateBlendShapeClipsFromSMR(renderer);
                 } else if (sourceOptions[selectedSourceIndex] == "Mesh") CreateBlendShapeClipsFromSMR(skinnedMeshRenderer);
-                Debug.Log("Util4: The creation of blend shape clips has been completed.");
+                Debug.Log("[VRMSetupTools] The creation of blend shape clips has been completed.");
             }
 
-            if (GUILayout.Button("Remove Null Clips")) blendShapeObject.Clips.RemoveAll(item => item == null);
+            if (GUILayout.Button("Remove Null Clips")) {
+                VRMBlendShapeProxy blendShapeProxy = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
+                blendShapeProxy.BlendShapeAvatar.Clips.RemoveAll(item => item == null);
+            }
+
         }
 
         private void CreateBlendShapeClipsFromSMR(SkinnedMeshRenderer renderer)
@@ -82,9 +88,9 @@ namespace Util4
             string meshName = renderer.name;
 
             // get mesh relative path
-            GameObject meshParent   = FindMeshParentObject(avatarPrefab.transform, meshName); // attention: possible duplication of names in child game objects in hierarchy
+            GameObject meshParent   = FindMeshParentObject(vrmPrefab.transform, meshName); // attention: possible duplication of names in child game objects in hierarchy
             string meshRelativePath = GetMeshRelativePath(meshParent);
-            meshRelativePath        = meshRelativePath.Substring(avatarPrefab.name.Length + 1); // exclude prefab name + "/"
+            meshRelativePath        = meshRelativePath.Substring(vrmPrefab.name.Length + 1); // exclude prefab name + "/"
 
             for (int i = 0; i < mesh.blendShapeCount; ++i)
             {
@@ -104,36 +110,36 @@ namespace Util4
                 // add blend shape binding to blend shape clip
                 BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
 
-                int clipIndex = blendShapeObject.Clips.FindIndex(0, blendShapeObject.Clips.Count, x => x.name == mesh.GetBlendShapeName(i));
+                int clipIndex = blendShapeAvatar.Clips.FindIndex(0, blendShapeAvatar.Clips.Count, x => x.name == mesh.GetBlendShapeName(i));
                 if (clipIndex == -1) { // if the blend shape clip does not exist
                     // create new blend shape clip
                     var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
-                    blendShapeObject.Clips.Add(clip);
+                    blendShapeAvatar.Clips.Add(clip);
                     clip.Values = blendShapeBindings;
 
-                    // notify Unity that the blendShapeObject has changed
-                    EditorUtility.SetDirty(blendShapeObject);
+                    // notify Unity that the blendShapeAvatar has changed
+                    EditorUtility.SetDirty(blendShapeAvatar);
                     EditorUtility.SetDirty(clip);
                 } else { // if the blend shape clip exists
-                    BlendShapeBinding[] blendShapeBindingValues = blendShapeObject.Clips[clipIndex].Values;
+                    BlendShapeBinding[] blendShapeBindingValues = blendShapeAvatar.Clips[clipIndex].Values;
                     int blendShapeBindingValueIndex = Array.FindIndex(blendShapeBindingValues, x => x.RelativePath == meshRelativePath);
                     Debug.Log(blendShapeBindingValueIndex);
                     if (blendShapeBindingValues.Length == 0) {
-                        blendShapeObject.Clips[clipIndex].Values = blendShapeBindings;
+                        blendShapeAvatar.Clips[clipIndex].Values = blendShapeBindings;
                     } else if (blendShapeBindingValueIndex == -1) {
                         // add the blend shape binding
                         // when the blend shape clip is exists, but blend shape binding is not exists
-                        Array.Resize(ref blendShapeObject.Clips[clipIndex].Values, blendShapeObject.Clips[clipIndex].Values.Length + 1);
-                        blendShapeObject.Clips[clipIndex].Values[blendShapeObject.Clips[clipIndex].Values.Length - 1] = blendShapeBinding;
-                    } else if (blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight == 0) {
+                        Array.Resize(ref blendShapeAvatar.Clips[clipIndex].Values, blendShapeAvatar.Clips[clipIndex].Values.Length + 1);
+                        blendShapeAvatar.Clips[clipIndex].Values[blendShapeAvatar.Clips[clipIndex].Values.Length - 1] = blendShapeBinding;
+                    } else if (blendShapeAvatar.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight == 0) {
                         // set the blend shape binding weight
                         // when the blend shape clip and the blend shape binding exist, and the weight value is 0
-                        blendShapeObject.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight = 100;
+                        blendShapeAvatar.Clips[clipIndex].Values[blendShapeBindingValueIndex].Weight = 100;
                     }
 
-                    // notify Unity that the blendShapeObject has changed
-                    EditorUtility.SetDirty(blendShapeObject.Clips[clipIndex]);
-                    EditorUtility.SetDirty(blendShapeObject);
+                    // notify Unity that the blendShapeAvatar has changed
+                    EditorUtility.SetDirty(blendShapeAvatar.Clips[clipIndex]);
+                    EditorUtility.SetDirty(blendShapeAvatar);
                 }
             }
         }
