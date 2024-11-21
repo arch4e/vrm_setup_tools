@@ -109,22 +109,14 @@ namespace VST_BlendShape_Screenshot {
             string blendShapeName = blendShapeAvatar.Clips[blendShapeClipIndex].name.Replace("BlendShape.", "");;
             string fileName = cameraObjects[cameraIndex].gameObject.name + "_" + blendShapeName + "." + saveFileFormat.ToString().ToLower();
 
-            if (Enum.TryParse(blendShapeName, out BlendShapePreset _blendShapePreset))
-                blendShapeProxy.ImmediatelySetValue(_blendShapePreset, 1.0f);
-            else
-                blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateUnknown(blendShapeName), 1.0f);
-
+            SetBlendShapeProxyValue(blendShapeProxy, blendShapeName, 1.0f);
             SceneView.RepaintAll();
 
             WaitForBlendShapeUpdate(() =>
             {
                 RenderImage(cameraObjects[cameraIndex], fileName);
 
-                if (Enum.TryParse(blendShapeName, out BlendShapePreset _blendShapePreset))
-                    blendShapeProxy.ImmediatelySetValue(_blendShapePreset, 0.0f);
-                else
-                    blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateUnknown(blendShapeName), 0.0f);
-
+                SetBlendShapeProxyValue(blendShapeProxy, blendShapeName, 0.0f);
                 AssetDatabase.Refresh();
 
                 if (++blendShapeClipIndex >= blendShapeAvatar.Clips.Count)
@@ -157,6 +149,13 @@ namespace VST_BlendShape_Screenshot {
                     EditorApplication.update -= OnEditorUpdate;  // delete from update event
                 }
             }
+        }
+        private void SetBlendShapeProxyValue(VRMBlendShapeProxy blendShapeProxy, string blendShapeName, float value)
+        {
+            if (Enum.TryParse(blendShapeName, out BlendShapePreset _blendShapePreset))
+                blendShapeProxy.ImmediatelySetValue(_blendShapePreset, value);
+            else
+                blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateUnknown(blendShapeName), value);
         }
 
         private void RemoveDuplicateOrNullItems(List<Camera> list)
