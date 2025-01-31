@@ -18,14 +18,14 @@ namespace VST_BlendShape_BlendShapeClips
 {
     public class VST_BlendShape_BlendShapeClips : EditorWindow
     {
-        private GameObject         vrmPrefab        = null;
-        private BlendShapeAvatar   blendShapeAvatar = null;
-        private UnityEngine.Object blendShapeFolder = null;
+        private GameObject          vrmPrefab           = null;
+        private BlendShapeAvatar    blendShapeAvatar    = null;
+        private UnityEngine.Object  blendShapeFolder    = null;
         private SkinnedMeshRenderer skinnedMeshRenderer = null;
         private int selectedSourceIndex = 0;
         private int selectedExistClipOptionIndex = 0;
 
-        [MenuItem("Tools/VRMSetupTools/BlendShape/BlendShapeClips")]
+        [MenuItem("VRM0/VST/BlendShape/BlendShapeClips")]
         static void Init()
         {
             var window = GetWindowWithRect<VST_BlendShape_BlendShapeClips>(new Rect(0, 0, 400, 560));
@@ -72,14 +72,13 @@ namespace VST_BlendShape_BlendShapeClips
                     SkinnedMeshRenderer[] renderers = vrmPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
                     foreach (var renderer in renderers) CreateBlendShapeClipsFromSMR(renderer);
                 } else if (sourceOptions[selectedSourceIndex] == "Mesh") CreateBlendShapeClipsFromSMR(skinnedMeshRenderer);
-                Debug.Log("[VRMSetupTools] The creation of blend shape clips has been completed.");
+                Debug.Log("[VST] The creation of blend shape clips has been completed.");
             }
 
             if (GUILayout.Button("Remove Null Clips")) {
                 VRMBlendShapeProxy blendShapeProxy = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
                 blendShapeProxy.BlendShapeAvatar.Clips.RemoveAll(item => item == null);
             }
-
         }
 
         private void CreateBlendShapeClipsFromSMR(SkinnedMeshRenderer renderer)
@@ -88,7 +87,7 @@ namespace VST_BlendShape_BlendShapeClips
             string meshName = renderer.name;
 
             // get mesh relative path
-            GameObject meshParent   = FindMeshParentObject(vrmPrefab.transform, meshName); // attention: possible duplication of names in child game objects in hierarchy
+            GameObject meshParent   = FindMeshParentObject(vrmPrefab.transform, meshName);   // attention: possible duplication of names in child game objects in hierarchy
             string meshRelativePath = GetMeshRelativePath(meshParent);
             meshRelativePath        = meshRelativePath.Substring(vrmPrefab.name.Length + 1); // exclude prefab name + "/"
 
@@ -109,7 +108,6 @@ namespace VST_BlendShape_BlendShapeClips
 
                 // add blend shape binding to blend shape clip
                 BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
-
                 int clipIndex = blendShapeAvatar.Clips.FindIndex(0, blendShapeAvatar.Clips.Count, x => x.name == mesh.GetBlendShapeName(i));
                 if (clipIndex == -1) { // if the blend shape clip does not exist
                     // create new blend shape clip
@@ -123,7 +121,7 @@ namespace VST_BlendShape_BlendShapeClips
                 } else { // if the blend shape clip exists
                     BlendShapeBinding[] blendShapeBindingValues = blendShapeAvatar.Clips[clipIndex].Values;
                     int blendShapeBindingValueIndex = Array.FindIndex(blendShapeBindingValues, x => x.RelativePath == meshRelativePath);
-                    Debug.Log(blendShapeBindingValueIndex);
+
                     if (blendShapeBindingValues.Length == 0) {
                         blendShapeAvatar.Clips[clipIndex].Values = blendShapeBindings;
                     } else if (blendShapeBindingValueIndex == -1) {

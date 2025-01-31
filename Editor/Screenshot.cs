@@ -20,8 +20,7 @@ namespace VST_BlendShape_Screenshot {
 
         /* variables */
         private List<Camera> cameraObjects = new List<Camera>();
-        private GameObject vrmPrefab = null; // del
-        private BlendShapeAvatar blendShapeAvatar = null;
+        private GameObject vrmPrefab = null;
         private UnityEditor.DefaultAsset outputFolder = null;
         private ReorderableList cameraList;
         private SUPPORTED_FILE_FORMATS saveFileFormat;
@@ -31,7 +30,7 @@ namespace VST_BlendShape_Screenshot {
         private System.Action onEditorUpdateAction = null;
         private bool finishedCaptureBlendShapeResults = false;
 
-        [MenuItem("Tools/VRMSetupTools/BlendShape/Screenshot")]
+        [MenuItem("VRM0/VST/BlendShape/Screenshot")]
         static void Init()
         {
             var window = GetWindowWithRect<VST_BlendShape_Screenshot>(new Rect(0, 0, 400, 560));
@@ -73,8 +72,7 @@ namespace VST_BlendShape_Screenshot {
         void OnGUI()
         {
             GUILayout.Space(10); // px
-            vrmPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true); // del
-            // blendShapeAvatar = (BlendShapeAvatar)EditorGUILayout.ObjectField("BlendShape File", blendShapeAvatar, typeof(BlendShapeAvatar), true);
+            vrmPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true);
             outputFolder = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Output Folder", outputFolder, typeof(UnityEditor.DefaultAsset), true);
             imageSize = (IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", imageSize);
             saveFileFormat = (SUPPORTED_FILE_FORMATS)EditorGUILayout.EnumPopup("File Format", saveFileFormat);
@@ -153,7 +151,7 @@ namespace VST_BlendShape_Screenshot {
         private void SetBlendShapeProxyValue(VRMBlendShapeProxy blendShapeProxy, string blendShapeName, float value)
         {
             if (Enum.TryParse(blendShapeName, out BlendShapePreset _blendShapePreset))
-                blendShapeProxy.ImmediatelySetValue(_blendShapePreset, value);
+                blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(_blendShapePreset), value);
             else
                 blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateUnknown(blendShapeName), value);
         }
