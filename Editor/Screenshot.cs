@@ -11,8 +11,8 @@ using UnityEditor;
 using UnityEditorInternal;
 #endif
 
-namespace VST_BlendShape_Screenshot {
-    public class VST_BlendShape_Screenshot : EditorWindow
+namespace VST {
+    public class BlendShape_Screenshot : EditorWindow
     {
         /* config */
         private enum SUPPORTED_FILE_FORMATS { PNG, JPG };
@@ -33,7 +33,7 @@ namespace VST_BlendShape_Screenshot {
         [MenuItem("VRM0/VST/BlendShape/Screenshot")]
         static void Init()
         {
-            var window = GetWindowWithRect<VST_BlendShape_Screenshot>(new Rect(0, 0, 400, 560));
+            var window = GetWindowWithRect<BlendShape_Screenshot>(new Rect(0, 0, 400, 560));
             window.Show();
         }
 
@@ -72,9 +72,9 @@ namespace VST_BlendShape_Screenshot {
         void OnGUI()
         {
             GUILayout.Space(10); // px
-            vrmPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true);
-            outputFolder = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Output Folder", outputFolder, typeof(UnityEditor.DefaultAsset), true);
-            imageSize = (IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", imageSize);
+            vrmPrefab      = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true);
+            outputFolder   = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Output Folder", outputFolder, typeof(UnityEditor.DefaultAsset), true);
+            imageSize      = (IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", imageSize);
             saveFileFormat = (SUPPORTED_FILE_FORMATS)EditorGUILayout.EnumPopup("File Format", saveFileFormat);
             GUILayout.Space(20); // px
 
@@ -103,6 +103,9 @@ namespace VST_BlendShape_Screenshot {
                 Debug.Log("[VRMSetupTools] Screenshots have been captured.");
                 return;
             } else finishedCaptureBlendShapeResults = false;
+
+            // remove null blend shape clips
+            blendShapeProxy.BlendShapeAvatar.Clips.RemoveAll(item => item == null);
 
             string blendShapeName = blendShapeAvatar.Clips[blendShapeClipIndex].name.Replace("BlendShape.", "");;
             string fileName = cameraObjects[cameraIndex].gameObject.name + "_" + blendShapeName + "." + saveFileFormat.ToString().ToLower();
