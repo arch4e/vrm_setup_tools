@@ -11,8 +11,8 @@ using UnityEditor;
 using UnityEditorInternal;
 #endif
 
-namespace VST_BlendShape_Screenshot {
-    public class VST_BlendShape_Screenshot : EditorWindow
+namespace VST {
+    public class BlendShape_Screenshot : EditorWindow
     {
         /* config */
         private enum SUPPORTED_FILE_FORMATS { PNG, JPG };
@@ -20,8 +20,7 @@ namespace VST_BlendShape_Screenshot {
 
         /* variables */
         private List<Camera> cameraObjects = new List<Camera>();
-        private GameObject vrmPrefab = null; // del
-        private BlendShapeAvatar blendShapeAvatar = null;
+        private GameObject vrmPrefab = null;
         private UnityEditor.DefaultAsset outputFolder = null;
         private ReorderableList cameraList;
         private SUPPORTED_FILE_FORMATS saveFileFormat;
@@ -31,10 +30,10 @@ namespace VST_BlendShape_Screenshot {
         private System.Action onEditorUpdateAction = null;
         private bool finishedCaptureBlendShapeResults = false;
 
-        [MenuItem("Tools/VRMSetupTools/BlendShape/Screenshot")]
+        [MenuItem("VRM0/VST/BlendShape/Screenshot")]
         static void Init()
         {
-            var window = GetWindowWithRect<VST_BlendShape_Screenshot>(new Rect(0, 0, 400, 560));
+            var window = GetWindowWithRect<BlendShape_Screenshot>(new Rect(0, 0, 400, 560));
             window.Show();
         }
 
@@ -73,10 +72,9 @@ namespace VST_BlendShape_Screenshot {
         void OnGUI()
         {
             GUILayout.Space(10); // px
-            vrmPrefab = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true); // del
-            // blendShapeAvatar = (BlendShapeAvatar)EditorGUILayout.ObjectField("BlendShape File", blendShapeAvatar, typeof(BlendShapeAvatar), true);
-            outputFolder = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Output Folder", outputFolder, typeof(UnityEditor.DefaultAsset), true);
-            imageSize = (IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", imageSize);
+            vrmPrefab      = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", vrmPrefab, typeof(GameObject), true);
+            outputFolder   = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Output Folder", outputFolder, typeof(UnityEditor.DefaultAsset), true);
+            imageSize      = (IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", imageSize);
             saveFileFormat = (SUPPORTED_FILE_FORMATS)EditorGUILayout.EnumPopup("File Format", saveFileFormat);
             GUILayout.Space(20); // px
 
@@ -105,6 +103,9 @@ namespace VST_BlendShape_Screenshot {
                 Debug.Log("[VRMSetupTools] Screenshots have been captured.");
                 return;
             } else finishedCaptureBlendShapeResults = false;
+
+            // remove null blend shape clips
+            blendShapeProxy.BlendShapeAvatar.Clips.RemoveAll(item => item == null);
 
             string blendShapeName = blendShapeAvatar.Clips[blendShapeClipIndex].name.Replace("BlendShape.", "");;
             string fileName = cameraObjects[cameraIndex].gameObject.name + "_" + blendShapeName + "." + saveFileFormat.ToString().ToLower();
@@ -153,7 +154,7 @@ namespace VST_BlendShape_Screenshot {
         private void SetBlendShapeProxyValue(VRMBlendShapeProxy blendShapeProxy, string blendShapeName, float value)
         {
             if (Enum.TryParse(blendShapeName, out BlendShapePreset _blendShapePreset))
-                blendShapeProxy.ImmediatelySetValue(_blendShapePreset, value);
+                blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(_blendShapePreset), value);
             else
                 blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateUnknown(blendShapeName), value);
         }
