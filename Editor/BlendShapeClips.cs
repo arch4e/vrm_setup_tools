@@ -9,9 +9,9 @@ using VRM;
 using UnityEditor;
 #endif
 
-namespace VST_BlendShape_BlendShapeClips
+namespace VST
 {
-    public class VST_BlendShape_BlendShapeClips : EditorWindow
+    public class BlendShape_BlendShapeClips : EditorWindow
     {
         private GameObject          vrmPrefab           = null;
         private BlendShapeAvatar    blendShapeAvatar    = null;
@@ -21,10 +21,10 @@ namespace VST_BlendShape_BlendShapeClips
         private int selectedSourceIndex = 0;
         private int selectedExistClipOptionIndex = 0;
 
-        [MenuItem("VRM0/VST/BlendShape/BlendShapeClips")]
+        [MenuItem("VRM0/VST/BlendShape/BlendShapeClip")]
         static void Init()
         {
-            var window = GetWindowWithRect<VST_BlendShape_BlendShapeClips>(new Rect(0, 0, 400, 560));
+            var window = GetWindowWithRect<BlendShape_BlendShapeClips>(new Rect(0, 0, 400, 560));
             window.Show();
         }
 
@@ -109,7 +109,7 @@ namespace VST_BlendShape_BlendShapeClips
             for (int i = 0; i < mesh.blendShapeCount; ++i) {
                 string blendShapeName = mesh.GetBlendShapeName(i);
                 string savePath = AssetDatabase.GetAssetPath(blendShapeFolder);              // Assets/<path>/<to>/<blend shape dir>
-                string dataPath = savePath + "/" + blendShapeName + ".asset";     // dir name + key name + .asset
+                string dataPath = savePath + "/" + blendShapeName + ".asset";                // dir name + key name + .asset
 
                 // skip processing when save directory is empty or asset file exists
                 // "selectedExistClipOptionIndex == 1" means "Skip"
@@ -123,7 +123,7 @@ namespace VST_BlendShape_BlendShapeClips
             // get mesh relative path
             GameObject meshParent   = FindMeshParentObject(vrmPrefab.transform, renderer.name);   // attention: possible duplication of names in child game objects in hierarchy
             string meshRelativePath = GetMeshRelativePath(meshParent);
-            meshRelativePath        = meshRelativePath.Substring(vrmPrefab.name.Length + 1); // exclude prefab name + "/"
+            meshRelativePath        = meshRelativePath.Substring(vrmPrefab.name.Length + 1);      // exclude prefab name + "/"
 
             foreach (var clipName in yamlData.Keys) {
                 if (yamlData[clipName] is List<object>) foreach (var blendShapeName in yamlData[clipName] as List<object>)

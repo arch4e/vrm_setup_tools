@@ -4,7 +4,7 @@ using System.Linq;
 
 using UnityEngine;
 
-namespace VST_BlendShape_BlendShapeClips
+namespace VST
 {
     public class YamlParser
     {
