@@ -15,10 +15,29 @@
 1. Move folder to `Assets` in your project
 1. Open tool window `(Menu) >> Tools >> VRMSetupTools/<categoly>/<tool>`
 
+## Usage
+
+### VRM0/VST/BlendShape/BlendShapeClip
+
+`YAML (optional)` is a optional field.  
+Generate blend shape clips from YAML configuration if specified,
+otherwise use all available blend shapes.
+
+```yaml
+# In the case of containing a single blend shape
+<blend shape name>: <blend shape name>
+
+# In the case of containing multiple blend shapes
+<blend shape name>:
+  - <blend shape name>
+  - <blend shape name>
+  - <blend shape name>
+```
+
 ## Development Environment
 
 * Unity 2021.3.40f1
-* [UniVRM-0.123.0_3104](https://github.com/vrm-c/UniVRM/releases)
+* [UniVRM-0.128.0_264a_vrm0](https://github.com/vrm-c/UniVRM/releases)
 
 ## License
 
