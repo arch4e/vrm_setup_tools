@@ -14,6 +14,7 @@ namespace VST
         private UnityEngine.Object   m_exportFolder            = null;
         private bool                 m_optionFieldIsOpen       = false;
         private SkinnedMeshRenderer  m_skinnedMeshRenderer     = null;
+        private bool                 m_removePrefixInClipName  = true;
         private bool                 m_skipIfClipAlreadyExists = false;
 
         [MenuItem("VRM0/VST/BlendShape/BlendShapeClipGenerator")]
@@ -50,6 +51,7 @@ namespace VST
                 );
 
                 GUILayout.Space(20); // px
+                m_removePrefixInClipName  = EditorGUILayout.Toggle("Remove prefix in clip name", m_removePrefixInClipName);
                 m_skipIfClipAlreadyExists = EditorGUILayout.Toggle("Skip if clip already exists", m_skipIfClipAlreadyExists);
             }
 
@@ -68,8 +70,11 @@ namespace VST
                 VRMBlendShapeProxy blendShapeProxy = m_vrmPrefab.GetComponent<VRMBlendShapeProxy>();
                 blendShapeProxy.BlendShapeAvatar.Clips.RemoveAll(item => item == null);
 
-                m_generator.m_exportFolder            = m_exportFolder;
-                m_generator.m_skipIfClipAlreadyExists = m_skipIfClipAlreadyExists;
+                m_generator.SetExportFolder(m_exportFolder);
+                m_generator.SetOptionValues(
+                    removePrefix  : m_removePrefixInClipName,
+                    skipExistClips: m_skipIfClipAlreadyExists
+                );
 
                 if (m_skinnedMeshRenderer == null) m_generator.CreateBlendShapeClips(m_vrmPrefab);
                 else                               m_generator.CreateBlendShapeClips(m_vrmPrefab, m_skinnedMeshRenderer);
