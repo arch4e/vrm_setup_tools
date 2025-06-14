@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq; // string.Contains
 using UniGLTF;     // string.ToUnityRelativePath()
 using UnityEditor;
 using UnityEngine;
@@ -10,8 +11,20 @@ namespace VST
 {
     public class BlendShapeClipGenerator
     {
-        public UnityEngine.Object m_exportFolder            = null;
-        public bool               m_skipIfClipAlreadyExists = false;
+        private string[] SUFFIX_LIST = new string[] {
+            "l", "L", "left" , "Left" ,
+            "r", "R", "right", "Right",
+            "open"  , "Open" ,
+            "close" , "Close",
+            "up"    , "Up"   ,
+            "down"  , "Down"
+        };
+
+        private UnityEngine.Object m_exportFolder = null;
+
+        // options
+        private bool m_removePrefixInClipName  = false;
+        private bool m_skipIfClipAlreadyExists = false;
 
         public void CreateBlendShapeClips(GameObject vrmPrefab)
         {
@@ -39,6 +52,7 @@ namespace VST
             for (int i = 0; i < mesh.blendShapeCount; ++i) {
                 try {
                     string blendShapeName = mesh.GetBlendShapeName(i);
+                    string clipName       = blendShapeName;
                     string dataPath       = savePath + "/" + blendShapeName + ".asset";    // dir name + key name + .asset
 
                     // skip processing when save directory is empty or blend shape clip already exists
@@ -50,6 +64,14 @@ namespace VST
                     // exit when the blend shape binding does not exist
                     if (blendShapeBindingIndex == -1) continue;
 
+                    // if prefix remove option is enabled, remove the prefix from the blend shape name
+                    if (m_removePrefixInClipName)
+                    {
+                        Debug.Log("----------");
+                        clipName = GetClipName(blendShapeName.Split('_'));
+                        dataPath = savePath + "/" + clipName + ".asset";    // dir name + key name + .asset
+                    }
+
                     // define new blend shape binding
                     BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
                     blendShapeBinding.RelativePath      = meshRelativePath;
@@ -58,7 +80,7 @@ namespace VST
 
                     // add blend shape binding to blend shape clip
                     BlendShapeBinding[] blendShapeBindings = { blendShapeBinding };
-                    int clipIndex = blendShapeAvatar.Clips.FindIndex(x => x.name == blendShapeName);
+                    int clipIndex = blendShapeAvatar.Clips.FindIndex(x => x.name == clipName);
                     if (clipIndex == -1) { // if the blend shape clip does not exist
                         // create new blend shape clip
                         var clip = BlendShapeAvatar.CreateBlendShapeClip(dataPath.ToUnityRelativePath());
@@ -93,6 +115,29 @@ namespace VST
                     Debug.LogError($"[VST] Failed to create blend shape clip for '{meshName}' with blend shape '{mesh.GetBlendShapeName(i)}'\n{e.Message}");
                 }
             }
+        }
+
+        public void SetExportFolder(UnityEngine.Object exportFolder)
+        {
+            m_exportFolder = exportFolder;
+        }
+
+        public void SetOptionValues(bool removePrefix, bool skipExistClips)
+        {
+            m_removePrefixInClipName  = removePrefix;
+            m_skipIfClipAlreadyExists = skipExistClips;
+        }
+
+        private string GetClipName() { return ""; }
+
+        private string GetClipName(string[] splitBlendShapeName)
+        {
+            foreach (var x in splitBlendShapeName) Debug.Log(x);
+            string clipName = splitBlendShapeName[splitBlendShapeName.Length - 1];
+
+            if (splitBlendShapeName.Length >=2 && SUFFIX_LIST.Contains(clipName)) {
+                return GetClipName(splitBlendShapeName[..^1]) + "_" + clipName;
+            } else return clipName;
         }
     }
 }
