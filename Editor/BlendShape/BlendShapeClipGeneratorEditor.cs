@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -7,7 +8,9 @@ namespace VST
 {
     public class BlendShapeClipGeneratorEditor : EditorWindow
     {
-        private BlendShapeClipGenerator m_generator = new BlendShapeClipGenerator();
+        private BlendShapeClipGenerator m_generator              = null;
+        private BlendShapeGroupManager  m_blendShapeGroupManager = null;
+        private BlendShapeGroupDrawer   m_blendShapeGroupDrawer  = null;
 
         // field values
         private GameObject           m_vrmPrefab               = null;
@@ -24,6 +27,13 @@ namespace VST
             window.Show();
         }
 
+        void OnEnable()
+        {
+            m_generator              = new BlendShapeClipGenerator();
+            m_blendShapeGroupManager = new BlendShapeGroupManager();
+            m_blendShapeGroupDrawer  = new BlendShapeGroupDrawer(m_blendShapeGroupManager);
+        }
+
         void OnGUI()
         {
             GUIStyle styleRadio = new GUIStyle(EditorStyles.radioButton);
@@ -36,6 +46,16 @@ namespace VST
             GUILayout.Space(5); // px
             GUILayout.Box("", GUILayout.Height(2), GUILayout.ExpandWidth(true));
             GUILayout.Space(5); // px
+
+            /* blend shape selector */
+            if (m_vrmPrefab != null) {
+                // build blend shape group
+                m_blendShapeGroupManager.BuildGroups(m_vrmPrefab, m_skinnedMeshRenderer);
+
+                // draw ui
+                m_blendShapeGroupDrawer.DrawBlendShapeGroups();
+            }
+            GUILayout.Space(20);
 
             /* options */
             m_optionFieldIsOpen = EditorGUILayout.BeginFoldoutHeaderGroup(m_optionFieldIsOpen, "Options");
@@ -66,6 +86,8 @@ namespace VST
                     return;
                 }
 
+                List<string> targetBlendShapeNames = m_blendShapeGroupManager.GetSelectedBlendShapeNames();
+
                 // remove null blend shape clips
                 VRMBlendShapeProxy blendShapeProxy = m_vrmPrefab.GetComponent<VRMBlendShapeProxy>();
                 blendShapeProxy.BlendShapeAvatar.Clips.RemoveAll(item => item == null);
@@ -76,8 +98,8 @@ namespace VST
                     skipExistClips: m_skipIfClipAlreadyExists
                 );
 
-                if (m_skinnedMeshRenderer == null) m_generator.CreateBlendShapeClips(m_vrmPrefab);
-                else                               m_generator.CreateBlendShapeClips(m_vrmPrefab, m_skinnedMeshRenderer);
+                if (m_skinnedMeshRenderer == null) m_generator.CreateBlendShapeClips(m_vrmPrefab, targetBlendShapeNames);
+                else                               m_generator.CreateBlendShapeClips(m_vrmPrefab, m_skinnedMeshRenderer, targetBlendShapeNames);
             }
 
             if (GUILayout.Button("Remove Null Clips")) {

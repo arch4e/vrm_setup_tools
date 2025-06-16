@@ -23,16 +23,16 @@ namespace VST
         private bool m_removePrefixInClipName  = false;
         private bool m_skipIfClipAlreadyExists = false;
 
-        public void CreateBlendShapeClips(GameObject vrmPrefab)
+        public void CreateBlendShapeClips(GameObject vrmPrefab, List<string> targetBlendShapeNames)
         {
             SkinnedMeshRenderer[] renderers = vrmPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-            foreach (var renderer in renderers) CreateBlendShapeClips(vrmPrefab, renderer);
+            foreach (var renderer in renderers) CreateBlendShapeClips(vrmPrefab, renderer, targetBlendShapeNames);
 
             Debug.Log("[VST] The creation of blend shape clips has been completed.");
         }
 
-        public void CreateBlendShapeClips(GameObject vrmPrefab, SkinnedMeshRenderer renderer)
+        public void CreateBlendShapeClips(GameObject vrmPrefab, SkinnedMeshRenderer renderer, List<string> targetBlendShapeNames)
         {
             VRMBlendShapeProxy blendShapeProxy  = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
             BlendShapeAvatar   blendShapeAvatar = blendShapeProxy.BlendShapeAvatar;
@@ -46,11 +46,10 @@ namespace VST
             string     meshRelativePath = meshUtil.GetMeshRelativePath(meshParent);
             meshRelativePath            = meshRelativePath.Substring(vrmPrefab.name.Length + 1);           // exclude prefab name + "/"
 
-            for (int i = 0; i < mesh.blendShapeCount; ++i) {
+            foreach (var blendShapeName in targetBlendShapeNames) {
                 try {
-                    string blendShapeName = mesh.GetBlendShapeName(i);
-                    string clipName       = blendShapeName;
-                    string dataPath       = savePath + "/" + blendShapeName + ".asset";    // dir name + key name + .asset
+                    string clipName = blendShapeName;
+                    string dataPath = savePath + "/" + blendShapeName + ".asset";    // dir name + key name + .asset
 
                     // skip processing when save directory is empty or blend shape clip already exists
                     if (string.IsNullOrEmpty(savePath) || (m_skipIfClipAlreadyExists && File.Exists(dataPath))) continue;
@@ -108,7 +107,7 @@ namespace VST
                         EditorUtility.SetDirty(blendShapeAvatar);
                     }
                 } catch (Exception e) {
-                    Debug.LogError($"[VST] Failed to create blend shape clip for '{meshName}' with blend shape '{mesh.GetBlendShapeName(i)}'\n{e.Message}");
+                    Debug.LogError($"[VST] Failed to create blend shape clip for '{meshName}' with blend shape '{blendShapeName}'\n{e.Message}");
                 }
             }
         }
