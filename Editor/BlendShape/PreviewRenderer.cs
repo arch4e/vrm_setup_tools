@@ -29,6 +29,7 @@ namespace VST {
             if (cameraIndex >= m_cameraObjects.Count)
             {
                 m_finishedCaptureBlendShapeResults = true;
+                EditorApplication.isPlaying        = false;
                 Debug.Log("[VST] Screenshots have been captured.");
                 return;
             } else m_finishedCaptureBlendShapeResults = false;
