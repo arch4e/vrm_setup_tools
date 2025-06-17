@@ -15,24 +15,10 @@
 1. Move folder to `Assets` in your project
 1. Open tool window `(Menu) >> VRM0 >> VST >> <categoly> >> <tool>`
 
-## Usage
+## User Manual
 
-### VRM0/VST/BlendShape/BlendShapeClip
-
-`YAML (optional)` is a optional field.  
-Generate blend shape clips from YAML configuration if specified,
-otherwise use all available blend shapes.
-
-```yaml
-# In the case of containing a single blend shape
-<blend shape name>: <blend shape name>
-
-# In the case of containing multiple blend shapes
-<blend shape name>:
-  - <blend shape name>
-  - <blend shape name>
-  - <blend shape name>
-```
+- [JA](https://arch4e.com/posts/vrm-setup-utility-usage-ja/)
+- [EN](https://arch4e.com/posts/vrm-setup-utility-usage-en/)
 
 ## Development Environment
 
@@ -42,4 +28,3 @@ otherwise use all available blend shapes.
 ## License
 
 GPLv3
-
