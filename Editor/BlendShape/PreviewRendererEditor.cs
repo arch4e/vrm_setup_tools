@@ -12,6 +12,8 @@ namespace VST {
         private List<Camera>                           m_cameraObjects  = new List<Camera>();
         private ReorderableList                        m_cameraList     = null;
         private PreviewRenderer.IMAGE_SIZE             m_imageSize      = PreviewRenderer.IMAGE_SIZE.Square_1k;
+        private int                                    m_imageHeight    = 1024,  // default 1k
+                                                       m_imageWidth     = 1024;  // default 1k
         private PreviewRenderer.SUPPORTED_FILE_FORMATS m_saveFileFormat = PreviewRenderer.SUPPORTED_FILE_FORMATS.PNG;
 
         [MenuItem("VRM0/VST/BlendShape/Screenshot")]
@@ -60,6 +62,18 @@ namespace VST {
             m_vrmPrefab      = (GameObject)EditorGUILayout.ObjectField("VRM Prefab", m_vrmPrefab, typeof(GameObject), true);
             m_exportFolder   = (UnityEditor.DefaultAsset)EditorGUILayout.ObjectField("Export Folder", m_exportFolder, typeof(UnityEditor.DefaultAsset), true);
             m_imageSize      = (PreviewRenderer.IMAGE_SIZE)EditorGUILayout.EnumPopup("Image Size", m_imageSize);
+
+            if (m_imageSize == PreviewRenderer.IMAGE_SIZE.Custom) {
+                EditorGUI.indentLevel++;
+                m_imageHeight = (int)EditorGUILayout.IntField("Height", m_imageHeight);
+                m_imageWidth  = (int)EditorGUILayout.IntField("Width" , m_imageWidth );
+                EditorGUI.indentLevel--;
+
+                if (m_renderer.m_imageHeight != m_imageHeight || m_renderer.m_imageWidth != m_imageWidth) {
+                    m_renderer.SetImageSize(m_imageWidth, m_imageHeight);
+                }
+            }
+
             m_saveFileFormat = (PreviewRenderer.SUPPORTED_FILE_FORMATS)EditorGUILayout.EnumPopup("File Format", m_saveFileFormat);
             GUILayout.Space(20); // px
 

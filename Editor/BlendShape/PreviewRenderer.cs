@@ -9,13 +9,13 @@ namespace VST {
     public class PreviewRenderer
     {
         /* config */
-        public enum IMAGE_SIZE             { Square_1k, Square_2k, Square_4k }; // todo: add Custom
+        public enum IMAGE_SIZE             { Square_1k, Square_2k, Square_4k, Custom };
         public enum SUPPORTED_FILE_FORMATS { PNG, JPG };
 
         /* variables */
         private List<Camera>             m_cameraObjects                    = new List<Camera>();
         private UnityEditor.DefaultAsset m_exportFolder                     = null;
-        private int                      m_imageHeight, m_imageWidth        = 1024; // default 1k
+        public  int                      m_imageHeight, m_imageWidth        = 1024; // default 1k
         private SUPPORTED_FILE_FORMATS   m_saveFileFormat                   = SUPPORTED_FILE_FORMATS.PNG;
         private System.Action            m_onEditorUpdateAction             = null;
         private bool                     m_finishedCaptureBlendShapeResults = false;
@@ -127,21 +127,23 @@ namespace VST {
 
         public void SetImageSize(IMAGE_SIZE imageSize)
         {
-            if (imageSize == IMAGE_SIZE.Square_1k)
-            {
+            if (imageSize == IMAGE_SIZE.Custom) {
+                return;
+            } else if (imageSize == IMAGE_SIZE.Square_1k) {
                 m_imageHeight = 1024;
                 m_imageWidth  = 1024;
-            }
-            else if (imageSize == IMAGE_SIZE.Square_2k)
-            {
+            } else if (imageSize == IMAGE_SIZE.Square_2k) {
                 m_imageHeight = 2048;
                 m_imageWidth  = 2048;
-            }
-            else if (imageSize == IMAGE_SIZE.Square_4k)
-            {
+            } else if (imageSize == IMAGE_SIZE.Square_4k) {
                 m_imageHeight = 4096;
                 m_imageWidth  = 4096;
             }
+        }
+
+        public void SetImageSize(int height, int width) {
+            m_imageHeight = height;
+            m_imageWidth  = width;
         }
 
         public void SetSaveFileFormat(SUPPORTED_FILE_FORMATS saveFileFormat)
