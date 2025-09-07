@@ -34,25 +34,28 @@ namespace VST
 
         public void CreateBlendShapeClips(GameObject vrmPrefab, SkinnedMeshRenderer renderer, List<string> targetBlendShapeNames)
         {
-            VRMBlendShapeProxy blendShapeProxy  = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
-            BlendShapeAvatar   blendShapeAvatar = blendShapeProxy.BlendShapeAvatar;
-            MeshUtil           meshUtil         = new MeshUtil();
-            Mesh               mesh             = renderer.sharedMesh;
-            string             meshName         = renderer.name;
-            string             savePath         = AssetDatabase.GetAssetPath(m_exportFolder);              // Assets/<path>/<to>/<blend shape dir>
+            VRMBlendShapeProxy blendShapeProxy   = vrmPrefab.GetComponent<VRMBlendShapeProxy>();
+            BlendShapeAvatar   blendShapeAvatar  = blendShapeProxy.BlendShapeAvatar;
+            MeshUtil           meshUtil          = new MeshUtil();
+            Mesh               mesh              = renderer.sharedMesh;
+            string             meshName          = renderer.name;
+            string             savePath          = AssetDatabase.GetAssetPath(m_exportFolder);             // Assets/<path>/<to>/<blend shape dir>
+            string[]           existingClipNames = GetExistingClipNames(blendShapeAvatar);                 // get existing clip names in the blend shape avatar
 
             // get mesh relative path
             GameObject meshParent       = meshUtil.FindMeshParentObject(vrmPrefab.transform, meshName);    // attention: possible duplication of names in child game objects in hierarchy
             string     meshRelativePath = meshUtil.GetMeshRelativePath(meshParent);
             meshRelativePath            = meshRelativePath.Substring(vrmPrefab.name.Length + 1);           // exclude prefab name + "/"
 
+            if (string.IsNullOrEmpty(savePath)) {
+                Debug.LogError("[VST] Export folder is not set or invalid. Please set a valid export folder.");
+                return;
+            }
+
             foreach (var blendShapeName in targetBlendShapeNames) {
                 try {
                     string clipName = blendShapeName;
                     string dataPath = savePath + "/" + blendShapeName + ".asset";    // dir name + key name + .asset
-
-                    // skip processing when save directory is empty or blend shape clip already exists
-                    if (string.IsNullOrEmpty(savePath) || (m_skipIfClipAlreadyExists && File.Exists(dataPath))) continue;
 
                     // find blend shape binding index
                     int blendShapeBindingIndex = renderer.sharedMesh.GetBlendShapeIndex(blendShapeName);
@@ -66,6 +69,9 @@ namespace VST
                         clipName = GetClipName(blendShapeName.Split('_'));
                         dataPath = savePath + "/" + clipName + ".asset";    // dir name + key name + .asset
                     }
+
+                    // skip processing when save directory is empty or blend shape clip already exists
+                    if (m_skipIfClipAlreadyExists && (Array.Find(existingClipNames, s => s == clipName) != null)) continue;
 
                     // define new blend shape binding
                     BlendShapeBinding blendShapeBinding = new BlendShapeBinding();
@@ -132,6 +138,17 @@ namespace VST
             if (splitBlendShapeName.Length >=2 && SUFFIX_LIST.Contains(clipName.ToLower())) {
                 return GetClipName(splitBlendShapeName[..^1]) + "_" + clipName;
             } else return clipName;
+        }
+
+        private string[] GetExistingClipNames(BlendShapeAvatar blendShapeAvatar)
+        {
+            List<string> clipNames = new List<string>();
+
+            foreach (var clip in blendShapeAvatar.Clips) {
+                clipNames.Add(clip.name);
+            }
+
+            return clipNames.ToArray();
         }
     }
 }
