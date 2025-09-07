@@ -17,7 +17,7 @@ namespace VST
         private UnityEngine.Object   m_exportFolder            = null;
         private bool                 m_optionFieldIsOpen       = false;
         private SkinnedMeshRenderer  m_skinnedMeshRenderer     = null;
-        private bool                 m_removePrefixInClipName  = true;
+        private bool                 m_removePrefixInClipName  = false;
         private bool                 m_skipIfClipAlreadyExists = false;
 
         [MenuItem("VRM0/VST/BlendShape/BlendShapeClipGenerator")]
